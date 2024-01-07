@@ -1,5 +1,7 @@
 import pygame
 import os
+import pygame.freetype
+import sqlite3
 
 pygame.init()
 size = width, height = 800, 500
@@ -12,6 +14,9 @@ def load_image(name, colorkey=None):
     image.convert_alpha()
     return image
 
+
+def load_db(name):
+    return os.path.join('data', name)
 
 
 class Animatedhero(pygame.sprite.Sprite):
@@ -35,32 +40,62 @@ class Animatedhero(pygame.sprite.Sprite):
     def update(self):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
+
+
+con = sqlite3.connect(load_db('tasks.db'))
+cur = con.cursor()
+
+font = pygame.freetype.Font("C:/Windows/Fonts/arial.ttf", 32)
+
+all_sprites = pygame.sprite.Group()
+
+hero = pygame.sprite.Sprite()
+hero = Animatedhero(load_image("hero_walk.png"), 5, 1, 30, 20)
+
+monster1 = pygame.sprite.Sprite()
+monster1 = Animatedhero(load_image("monster_walk.png"), 6, 1, 30, 20)
+monster1.rect.x = width
+monster1.rect.y = 30
+
+star = pygame.sprite.Sprite()
+star.image = load_image('star.png')
+star.rect = star.image.get_rect()
+star.rect.x = width - 30
+star.rect.y = 0
+all_sprites.add(star)
+
 if __name__ == '__main__':
-    all_sprites = pygame.sprite.Group()
-    sprite = pygame.sprite.Sprite()
-    sprite.image = load_image("walk1.png")
-    sprite.rect = sprite.image.get_rect()
-    all_sprites.add(sprite)
-    fps = 60
+
+    coins = 0
+    fps = 8
     running = True
-    paint = False
     clock = pygame.time.Clock()
     pygame.mouse.set_visible(False)
     while running:
+        corr_id = 1
+        screen.fill((255, 255, 255))
         for event in pygame.event.get():
-            screen.fill((255, 255, 255))
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and sprite.rect.x > 0:
-                    sprite.rect.x -= 10
-                if event.key == pygame.K_RIGHT:
-                    sprite.rect.x += 10
-                if event.key == pygame.K_UP and sprite.rect.y > 0:
-                    sprite.rect.y -= 10
-                if event.key == pygame.K_DOWN:
-                    sprite.rect.y += 10
+                if event.key == pygame.K_LEFT and hero.rect.x > 0:
+                    hero.rect.x -= 30
+                if event.key == pygame.K_RIGHT and hero.rect.x < width // 3:
+                    hero.rect.x += 30
+                if event.key == pygame.K_UP and hero.rect.y > 30:
+                    hero.rect.y -= 30
+                if event.key == pygame.K_DOWN and hero.rect.y < height:
+                    hero.rect.y += 30
+            if True:
+                task = cur.execute(
+                    f'SELECT number1, operator, number2, answer FROM tasks WHERE id = {corr_id}').fetchone()
+                ans = task[3]
+                task = str(task[0]) + task[1] + str(task[2]) + '= ?'
+        monster1.rect.x -= 7
+        font.render_to(screen, (width - 60, 5), str(coins), (0, 0, 0))
+        font.render_to(screen, (5, 5), task)
         all_sprites.draw(screen)
+        all_sprites.update()
         clock.tick(fps)
         pygame.display.flip()
     pygame.quit()
