@@ -159,7 +159,7 @@ if __name__ == '__main__':
     corr_id = 1
     labels = answers(1)
     while running:
-        if life == 0 or coins == 10:
+        if life == 0 or coins == 7:
             running = False
             break
         screen.fill([255, 255, 255])
@@ -322,10 +322,10 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 end_it = False
-                result = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                end_it = False
         myfont = pygame.font.SysFont("Britannic Bold", 60)
         nlabel = myfont.render(str(coins), 1, (255, 255, 255))
         screen.blit(nlabel, (30, height - 140))
         pygame.display.flip()
-
     pygame.quit()
