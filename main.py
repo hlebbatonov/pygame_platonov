@@ -1,7 +1,6 @@
 import pygame
 import os
 import pygame.freetype
-import sqlite3
 import random
 from tasks_generator import tasks_generator
 pygame.init()
