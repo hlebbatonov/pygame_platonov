@@ -16,9 +16,14 @@ def load_image(name, colorkey=None):
     image.convert_alpha()
     return image
 
-def answers():
+def answers(x):
     global task, corr_id, ans
-    task = tasks_generator()
+    if x == 1:
+        task = tasks_generator(1)
+    else:
+        task = tasks_generator(2)
+
+
     ans = task[3]
     task = str(task[0]) + task[1] + str(task[2]) + '= ?'
     labels = []
@@ -105,8 +110,8 @@ heart.rect.x = width // 2
 heart.rect.y = 3
 all_sprites.add(heart)
 
-bg = Background('ground.jpg', [0,0])
-
+bg = Background('ground2.jpg', [0,0])
+bg2 = Background('ground.jpg', [0,0])
 life = 3
 
 start_bg = Background('start_bg1.jpg', [0,0])
@@ -116,7 +121,9 @@ if __name__ == '__main__':
     end_anim = True
     start_anim = True
     running = True
+    running2 = True
     end_it = True
+    result = True
     while start_it:
         screen.fill((0, 0, 0))
         screen.blit(start_bg.image, start_bg.rect)
@@ -131,6 +138,8 @@ if __name__ == '__main__':
                 end_anim = False
                 end_it = False
                 running = False
+                running2 = False
+                result = False
         screen.blit(nlabel, (10, height - 90))
         pygame.display.flip()
 
@@ -148,9 +157,9 @@ if __name__ == '__main__':
     coins = 0
     pygame.mouse.set_visible(False)
     corr_id = 1
-    labels = answers()
+    labels = answers(1)
     while running:
-        if life == 0:
+        if life == 0 or coins == 10:
             running = False
             break
         screen.fill([255, 255, 255])
@@ -162,6 +171,8 @@ if __name__ == '__main__':
                 start_anim = False
                 end_anim = False
                 end_it = False
+                running2 = False
+                result = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT and hero.rect.x > 0:
                     hero.rect.x -= 30
@@ -169,7 +180,7 @@ if __name__ == '__main__':
                     hero.rect.x += 30
                 if event.key == pygame.K_UP and hero.rect.y > 30:
                     hero.rect.y -= 30
-                if event.key == pygame.K_DOWN and hero.rect.y < height:
+                if event.key == pygame.K_DOWN and hero.rect.y < height - 98:
                     hero.rect.y += 30
         if pygame.sprite.collide_mask(hero, monster1) or pygame.sprite.collide_mask(hero,
                                                                                     monster2) or pygame.sprite.collide_mask(
@@ -194,7 +205,7 @@ if __name__ == '__main__':
             monster2.rect.x = width
             monster3.rect.x = width
             corr_id += 1
-            labels = answers()
+            labels = answers(1)
 
         monster1.rect.x -= 7
         monster2.rect.x -= 7
@@ -204,6 +215,78 @@ if __name__ == '__main__':
         font.render_to(screen, (monster3.rect.x + 90, monster3.rect.y), labels[2], (0, 0, 0))
         font.render_to(screen, (width - 60, 5), str(coins), (0, 0, 0))
         font.render_to(screen, (5, 5), task)
+
+        if life == 2:
+            heart.image = load_image('life2.png')
+            heart.rect = heart.image.get_rect()
+            heart.rect.x = width // 2
+            heart.rect.y = 3
+        elif life == 1:
+            heart.image = load_image('life1.png')
+            heart.rect = heart.image.get_rect()
+            heart.rect.x = width // 2
+            heart.rect.y = 3
+
+        all_sprites.draw(screen)
+        all_sprites.update()
+        clock.tick(fps)
+        pygame.display.flip()
+    while running2:
+        if life == 0:
+            running2 = False
+            break
+        screen.fill([255, 255, 255])
+        screen.blit(bg2.image, bg2.rect)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                start_it = False
+                start_anim = False
+                end_anim = False
+                end_it = False
+                running2 = False
+                result = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT and hero.rect.x > 0:
+                    hero.rect.x -= 30
+                if event.key == pygame.K_RIGHT and hero.rect.x < width // 3:
+                    hero.rect.x += 30
+                if event.key == pygame.K_UP and hero.rect.y > 30:
+                    hero.rect.y -= 30
+                if event.key == pygame.K_DOWN and hero.rect.y < height - 98:
+                    hero.rect.y += 30
+        if pygame.sprite.collide_mask(hero, monster1) or pygame.sprite.collide_mask(hero,
+                                                                                    monster2) or pygame.sprite.collide_mask(
+            hero, monster3):
+
+            if pygame.sprite.collide_mask(hero, monster1):
+                if int(labels[0]) == ans:
+                    coins += 1
+                else:
+                    life -= 1
+            if pygame.sprite.collide_mask(hero, monster2):
+                if int(labels[1]) == ans:
+                    coins += 1
+                else:
+                    life -= 1
+            if pygame.sprite.collide_mask(hero, monster3):
+                if int(labels[2]) == ans:
+                    coins += 1
+                else:
+                    life -= 1
+            monster1.rect.x = width
+            monster2.rect.x = width
+            monster3.rect.x = width
+            corr_id += 1
+            labels = answers(2)
+        monster1.rect.x -= 13
+        monster2.rect.x -= 13
+        monster3.rect.x -= 13
+        font.render_to(screen, (monster1.rect.x + 90, monster1.rect.y), labels[0], (255, 255, 255))
+        font.render_to(screen, (monster2.rect.x + 90, monster2.rect.y), labels[1], (255, 255, 255))
+        font.render_to(screen, (monster3.rect.x + 90, monster3.rect.y), labels[2], (255, 255, 255))
+        font.render_to(screen, (width - 70, 5), str(coins), (255, 255, 255))
+        font.render_to(screen, (5, 5), task, (255, 255, 255))
 
         if life == 2:
             heart.image = load_image('life2.png')
@@ -233,13 +316,13 @@ if __name__ == '__main__':
         clock.tick(fps)
         pygame.display.flip()
     while end_it:
-
         screen.fill((0, 0, 0))
         start_bg = Background(f'end_bg.jpg', [0,0])
         screen.blit(start_bg.image, start_bg.rect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 end_it = False
+                result = False
         myfont = pygame.font.SysFont("Britannic Bold", 60)
         nlabel = myfont.render(str(coins), 1, (255, 255, 255))
         screen.blit(nlabel, (30, height - 140))
